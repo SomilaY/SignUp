@@ -59,6 +59,35 @@ app.post('/register', async (req, res) => {
   }
 });
 
+// API endpoint for user sign-in
+app.post('/signin', async (req, res) => {
+  try {
+    // Validate the required fields
+    const { username, password } = req.body;
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    // Find the user by username
+    const user = await User.findOne({ username });
+
+    // Check if the user exists
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    // Compare the provided password with the hashed password stored in the database
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    res.status(200).json({ message: 'Sign-in successful' });
+  } catch (error) {
+    res.status(500).json({ error: 'Sign-in failed' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
